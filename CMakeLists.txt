@@ -5,48 +5,46 @@ project(CvPlotTest CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-set(CMAKE_VERBOSE_MAKEFILE ON)
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
 # ============== INTEGRAÇÃO CVPLOT (VIA GITHUB) ==============
-# 1. Baixa o código-fonte do CvPlot
 include(FetchContent)
 FetchContent_Declare(
     cvplot_source
     GIT_REPOSITORY https://github.com/Profactor/cv-plot.git
-    GIT_TAG        v1.2.2  # <--- ALTERAÇÃO AQUI: Usando a tag estável
-    #GIT_TAG        master
+    GIT_TAG        v1.2.2  # Versão Estável para API consistente
 )
 FetchContent_GetProperties(cvplot_source)
 if (NOT cvplot_source_POPULATED)
     FetchContent_Populate(cvplot_source)
 endif()
 
-# 2. Define o target manual como INTERFACE (Apenas cabeçalhos)
-add_library(cv-plot_manual INTERFACE)
-
-# 3. Propaga os diretórios de cabeçalho (resolve o "No such file or directory")
-target_include_directories(cv-plot_manual INTERFACE
-    ${cvplot_source_SOURCE_DIR}/CvPlot/inc
+# 2. Define o target como STATIC e ADICIONA O ARQUIVO FONTE (soluciona "undefined reference")
+add_library(cv-plot_manual STATIC
+    # Incluindo a pasta CvPlot/ no caminho do código-fonte
+    ${cvplot_source_SOURCE_DIR}/CvPlot/src/cvplot.cpp
 )
 
-# 4. Propaga a dependência do OpenCV para a biblioteca
-target_link_libraries(cv-plot_manual INTERFACE
+# 3. Propaga os diretórios de cabeçalho
+# CMakeLists.txt: Bloco target_include_directories
+target_include_directories(cv-plot_manual PUBLIC
+    # 1. Este caminho era para os cabeçalhos públicos (.h)
+    ${cvplot_source_SOURCE_DIR}/CvPlot/inc
+
+    # 2. CORREÇÃO: Adicione o diretório raiz do código-fonte
+    ${cvplot_source_SOURCE_DIR}
+)
+# 4. Propaga a dependência do OpenCV
+target_link_libraries(cv-plot_manual PUBLIC
     opencv::opencv
 )
 # ==========================================================
 
-
 # ============== INTEGRAÇÃO PRINCIPAL ==============
-
-# 5. Encontra o OpenCV (gerenciado pelo Conan)
 find_package(OpenCV REQUIRED)
 
-# 6. Define o Executável
-add_executable(teste_plot main.cpp)
+add_executable(cvplot_demo main.cpp)
 
-# 7. Linka TUDO: O executável precisa da biblioteca CvPlot manual,
-# que já carrega o OpenCV (e seus includes) automaticamente.
-target_link_libraries(teste_plot PRIVATE
+# Linka TUDO: O executável herda todas as dependências (includes, libs) de cv-plot_manual
+target_link_libraries(cvplot_demo PRIVATE
     cv-plot_manual
 )
+

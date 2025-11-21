@@ -1,22 +1,45 @@
-// main.cpp (plot simples y = sin(x) + janela OpenCV)
-
 #include <CvPlot/cvplot.h>
 #include <cmath>
+#include <iostream>
 #include <opencv2/opencv.hpp>
 #include <vector>
 
 int main() {
-  const int N = 200;
-  std::vector<double> x(N), y(N);
-  for (int i = 0; i < N; ++i) {
-    x[i] = i * 2 * M_PI / N;
-    y[i] = std::sin(x[i]);
-  }
+    const int num_points = 100;
+    std::vector<double> x(num_points), y(num_points);
 
-  // renderiza o gráfico para cv::Mat
-  cv::Mat img = CvPlot::plot(x, y, "-").render();
+    auto axes = CvPlot::makePlotAxes();
+    axes.title("Teste CvPlot Animado");
+    axes.xLabel("Tempo");
+    axes.yLabel("Amplitude");
 
-  cv::imshow("CVPlot Demo", img); // janela OpenCV
-  cv::waitKey(0);
-  return 0;
+    std::cout << "Pressione qualquer tecla na janela do gráfico para sair..."
+              << std::endl;
+
+// ...
+    int offset = 0;
+    while (true) {
+        // 1. Atualiza os dados
+        for (int i = 0; i < num_points; ++i) {
+            x[i] = i;
+            y[i] = std::sin((i + offset) * 0.1) * 10.0;
+        }
+
+        // 2. Renderiza a SÉRIE DE DADOS em uma linha (assume que o render retorna a Mat)
+        // Usa a função mais simples de renderização da série de dados.
+        cv::Mat img = CvPlot::plot(x, y, "b-o").render(600, 400);
+
+        // 3. Exibe usando OpenCV padrão
+        cv::imshow("Demo CvPlot", img);
+
+        // 4. Controle de FPS e Saída
+        if (cv::waitKey(30) >= 0) {
+            break;
+        }
+
+        offset++;
+    }
+
+    return 0;
 }
+

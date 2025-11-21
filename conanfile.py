@@ -1,25 +1,22 @@
 from conan import ConanFile
-from conan.tools.cmake import cmake_layout
+from conan.tools.cmake import CMakeToolchain, CMake, cmake_layout
+from conan.tools.build import check_min_cppstd
 
-
-class TesteCvPlot(ConanFile):
+class MeuProjetoCvplotConan(ConanFile):
+    name = "meu-projeto-cvplot"
+    version = "1.0"
     settings = "os", "compiler", "build_type", "arch"
     generators = "CMakeDeps", "CMakeToolchain"
 
-    def requirements(self):
-        # Usando as versões que você já tem no cache
-        self.requires("opencv/4.12.0")
-        self.requires("cvplot/1.2.2")
-
-    def configure(self):
-        # Importante: Habilitar GUI no Linux para abrir janelas
-        if self.settings.os == "Linux":
-            self.options["opencv"].with_gtk = True
-
-    # Prevenção contra o erro do WebP/FFmpeg que vimos antes
-    default_options = {
-        "ffmpeg/*:with_webp": False,
-    }
-
+    # Exportar os artefatos de build para a pasta 'build'
     def layout(self):
         cmake_layout(self)
+
+    # Requer o OpenCV (necessário para o CvPlot)
+    def requirements(self):
+        self.requires("opencv/4.12.0")
+
+    # Garante o C++17
+    def validate(self):
+        check_min_cppstd(self, "17")
+

@@ -1,19 +1,22 @@
 // main.cpp (plot simples y = sin(x) + janela OpenCV)
 
+#include <CvPlot/cvplot.h>
 #include <cmath>
-#include <cvplot/cvplot.h>
 #include <opencv2/opencv.hpp>
+#include <vector>
 
 int main() {
   const int N = 200;
-  std::vector<float> x(N), y(N);
+  std::vector<double> x(N), y(N);
   for (int i = 0; i < N; ++i) {
     x[i] = i * 2 * M_PI / N;
     y[i] = std::sin(x[i]);
   }
 
-  cvplot::plot("Sinus", cvplot::plot::line(x, y)); // desenha
-  cvplot::plot::show("CVPlot Demo");               // abre janela
-  cv::waitKey(0);                                  // aguarda ESC
+  // renderiza o gráfico para cv::Mat
+  cv::Mat img = CvPlot::plot(x, y, "-").render();
+
+  cv::imshow("CVPlot Demo", img); // janela OpenCV
+  cv::waitKey(0);
   return 0;
 }

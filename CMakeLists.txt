@@ -1,19 +1,17 @@
 cmake_minimum_required(VERSION 3.15)
 project(CVPlotDemo LANGUAGES CXX)
 
-find_package(cvplot REQUIRED)   # header-only
-find_package(OpenCV REQUIRED)   # cvplot depende de OpenCV
+find_package(OpenCV REQUIRED)
 
-add_executable(cvplot_demo
-    main.cpp
-)
+# ---- cvplot include (header-only, sem target) ----
+find_path(
+  CVPLOT_INCLUDE_DIR CvPlot/cvplot.h # <--- maiúsculo
+  PATHS ${CMAKE_PREFIX_PATH}
+  PATH_SUFFIXES include REQUIRED)
+# --------------------------------------------------
 
-target_link_libraries(cvplot_demo
-    PRIVATE
-        cvplot::cvplot
-        opencv::opencv
-)
+add_executable(cvplot_demo main.cpp)
 
-set_target_properties(cvplot_demo PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
-)
+target_include_directories(cvplot_demo PRIVATE ${CVPLOT_INCLUDE_DIR})
+target_link_libraries(cvplot_demo PRIVATE opencv::opencv)
+target_compile_features(cvplot_demo PRIVATE cxx_std_17)
